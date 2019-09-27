@@ -58,13 +58,17 @@ int main(int argc, char** argv) {
   //detail resolution
   //Amplitude(wrt p) controls the upper bound and lower bounds of the map
   //freq controls the start frequency, start at lower values, and it keeps doubling
-  generateMap(width, height, 128, 0.5, 1, 4, 16, map1);
+  generateMap(width, height, 128, 0.5, 1, 4, 8, map1);
 
+  double max = -1;
+  double min = 1;
   for(int i = 0; i < width * height; i++) {
     mapFinal[i] = map1[i]; 
+    if(mapFinal[i] > max) max = mapFinal[i];
+    if(mapFinal[i] < min) min = mapFinal[i];
   }
 
-  double maxValue = 1.0;
+  double maxValue = 1.00f;
 
   int green = 0x608038;
   int water = 0x0077be;
@@ -76,14 +80,16 @@ int main(int argc, char** argv) {
   for(int i = 0; i < width * height; i++) {
     int finalVal = 0;
 
-    if(mapFinal[i] < -1 * 0.05 * maxValue) finalVal = water;
+    if(mapFinal[i] < 0.5 * maxValue) finalVal = water;
     //else if(perlVal < -0.05) finalVal = swampy;
-    else if(mapFinal[i] < 0 * maxValue) finalVal = sand;
-    else if(mapFinal[i] < 0.4 * maxValue) finalVal = green;
+    else if(mapFinal[i] < 0.5125 * maxValue) finalVal = sand;
+    else if(mapFinal[i] < 0.7 * maxValue) finalVal = green;
     else if(mapFinal[i] < 1.0 * maxValue) finalVal = snow;
 
     pixels[i] = finalVal;
   }
+
+  printf("Map max: %f\nMap min: %f\n", max, min);
 
   SDL_UpdateTexture(texture, NULL, pixels, width * sizeof(int));
 	SDL_RenderClear(renderer);

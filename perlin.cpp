@@ -33,8 +33,8 @@ void generateMap(int width, int height, double z, double persistance, double amp
   //enumerate this
 	for(int y = 0; y < height; y++) {
 		for(int x = 0; x < width; x++) {
-			double dx = ((double) x) / height;
-			double dy = ((double) y) / width;
+			double dx = ((double) x) / (height);
+			double dy = ((double) y) / (width);
 
       double perlVal = octavePerlin(dx, dy, z/height, persistance, amplitude, frequency, numberOfOctaves);  
       //double perlVal = perlin(dx * frequency, dy * frequency, z * frequency);
@@ -67,7 +67,12 @@ double octavePerlin(double x, double y, double z, double persistance, double sta
   }
 
   //TODO: Needs proper testing
-  return total/maxValue;
+  //Normalizing data to [0, 1]
+  //Inorm = x - min(x) / (max - min)
+  
+  double norm = total + maxValue;
+  norm /= 2 * maxValue;
+  return norm;
 }
 
 double perlin(double x, double y, double z) {
