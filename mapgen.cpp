@@ -1,6 +1,7 @@
 #include <SDL2/SDL.h>
 #include <cstdio>
 #include <cstring>
+#include <iostream>
 
 #include "perlin.hpp"
 
@@ -43,12 +44,8 @@ int main(int argc, char** argv) {
   memset(pixels, 255, sizeof(int) * width * height);
 
   double* map1 = new double[width * height];  //1d mapping of 2d plane
-  double* map2 = new double[width * height];  //1d mapping of 2d plane
-  double* map3 = new double[width * height];  //1d mapping of 2d plane
   double* mapFinal = new double[width * height];  //1d mapping of 2d plane
   memset(map1, 0, sizeof(double) * width * height);
-  memset(map2, 0, sizeof(double) * width * height);
-  memset(map3, 0, sizeof(double) * width * height);
   memset(mapFinal, 0, sizeof(double) * width * height);
 
   //persistance, amp, freq, numOctaves
@@ -60,6 +57,9 @@ int main(int argc, char** argv) {
   //freq controls the start frequency, start at lower values, and it keeps doubling
   generateMap(width, height, 128, 0.5, 1, 4, 8, map1);
 
+  //saving values in file for analytics
+
+
   double max = -1;
   double min = 1;
   for(int i = 0; i < width * height; i++) {
@@ -67,6 +67,20 @@ int main(int argc, char** argv) {
     if(mapFinal[i] > max) max = mapFinal[i];
     if(mapFinal[i] < min) min = mapFinal[i];
   }
+
+  printf("Max: %d\nMin: %d\n", max, min);
+
+  //Worth a try
+  //Normalize all points
+  double newmax = -1;
+  double newmin = -1;
+  for(int i = 0; i < width * height; i++) {
+    mapFinal[i] = (mapFinal[i] - min) / (max - min);
+    if(mapFinal[i] > newmax) newmax = mapFinal[i];
+    if(mapFinal[i] < newmin) newmin = mapFinal[i];
+  }
+  
+  printf("NewMax: %d\nNewMin: %d\n", newmax, newmin);
 
   double maxValue = 1.00f;
 
@@ -76,20 +90,20 @@ int main(int argc, char** argv) {
   int snow = 0xfffafa;
   int rocky = 0x353644;
   int swampy = 0x152b12;
+  int deep_ocean = 0x01556b;
   
   for(int i = 0; i < width * height; i++) {
     int finalVal = 0;
 
-    if(mapFinal[i] < 0.5 * maxValue) finalVal = water;
+    if(mapFinal[i] < 0.3 * maxValue) finalVal = deep_ocean;
+    else if(mapFinal[i] < 0.45 * maxValue) finalVal = water;
     //else if(perlVal < -0.05) finalVal = swampy;
-    else if(mapFinal[i] < 0.5125 * maxValue) finalVal = sand;
+    else if(mapFinal[i] < 0.4625 * maxValue) finalVal = sand;
     else if(mapFinal[i] < 0.7 * maxValue) finalVal = green;
     else if(mapFinal[i] < 1.0 * maxValue) finalVal = snow;
 
     pixels[i] = finalVal;
   }
-
-  printf("Map max: %f\nMap min: %f\n", max, min);
 
   SDL_UpdateTexture(texture, NULL, pixels, width * sizeof(int));
 	SDL_RenderClear(renderer);

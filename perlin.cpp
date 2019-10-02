@@ -10,8 +10,7 @@
 
 using namespace std;
 
-static int p[512] = {0};
-
+static int p[512] = {0}; 
 void initPermutations() {
   int perm[256] = {0};
   for(int i = 0; i < LENGTH_OF(perm); i++) {
