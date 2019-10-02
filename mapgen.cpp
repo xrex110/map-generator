@@ -2,6 +2,9 @@
 #include <cstdio>
 #include <cstring>
 #include <iostream>
+#include <ctime>
+#include <string>
+#include <algorithm>
 
 #include "perlin.hpp"
 
@@ -55,32 +58,61 @@ int main(int argc, char** argv) {
   //detail resolution
   //Amplitude(wrt p) controls the upper bound and lower bounds of the map
   //freq controls the start frequency, start at lower values, and it keeps doubling
-  generateMap(width, height, 128, 0.5, 1, 4, 8, map1);
+  generateMap(width, height, 128, 0.625, 1, 3, 8, map1);
 
-  //saving values in file for analytics
-
+  int space = width * height;
 
   double max = -1;
   double min = 1;
-  for(int i = 0; i < width * height; i++) {
+  for(int i = 0; i < space; i++) {
     mapFinal[i] = map1[i]; 
     if(mapFinal[i] > max) max = mapFinal[i];
     if(mapFinal[i] < min) min = mapFinal[i];
   }
 
-  printf("Max: %d\nMin: %d\n", max, min);
+  printf("Max: %f\nMin: %f\n", max, min);
 
   //Worth a try
   //Normalize all points
   double newmax = -1;
-  double newmin = -1;
-  for(int i = 0; i < width * height; i++) {
+  double newmin = 1;
+  for(int i = 0; i < space; i++) {
     mapFinal[i] = (mapFinal[i] - min) / (max - min);
     if(mapFinal[i] > newmax) newmax = mapFinal[i];
     if(mapFinal[i] < newmin) newmin = mapFinal[i];
   }
   
-  printf("NewMax: %d\nNewMin: %d\n", newmax, newmin);
+  printf("NewMax: %f\nNewMin: %f\n", newmax, newmin);
+
+  ////////////////////////////////////////////////////////
+
+  //saving values in file for analytics
+  time_t cur_time = time(0);
+  char* time_as_str = ctime(&cur_time);
+  time_as_str[strlen(time_as_str) - 2] = 0;
+  printf("cur_time: %s\n", time_as_str);
+  string loc("maps/Map_");
+  string fileName(time_as_str);
+
+  string::iterator end_pos = remove(fileName.begin(), fileName.end(), ' ');
+  fileName.erase(end_pos, fileName.end());
+  string filetype(".txt");
+  fileName = loc + fileName + filetype;
+  printf("Writing data to %s\n", fileName.c_str());
+  FILE* mapVals = fopen(fileName.c_str(), "w");
+  if(!mapVals) {
+    printf("File creation failed\n");
+    return 1;
+  }
+
+  for(int i = 0; i < space - 1; i++) {
+    fprintf(mapVals, "%.2f,", mapFinal[i]); 
+  }
+  fprintf(mapVals, "%.2f", mapFinal[space - 1]);
+  fclose(mapVals);
+  mapVals = NULL;
+
+  ////////////////////////////////////////////////////////
 
   double maxValue = 1.00f;
 
@@ -96,10 +128,9 @@ int main(int argc, char** argv) {
     int finalVal = 0;
 
     if(mapFinal[i] < 0.3 * maxValue) finalVal = deep_ocean;
-    else if(mapFinal[i] < 0.45 * maxValue) finalVal = water;
-    //else if(perlVal < -0.05) finalVal = swampy;
-    else if(mapFinal[i] < 0.4625 * maxValue) finalVal = sand;
-    else if(mapFinal[i] < 0.7 * maxValue) finalVal = green;
+    else if(mapFinal[i] < 0.52 * maxValue) finalVal = water;
+    else if(mapFinal[i] < 0.53 * maxValue) finalVal = sand;
+    else if(mapFinal[i] < 0.85 * maxValue) finalVal = green;
     else if(mapFinal[i] < 1.0 * maxValue) finalVal = snow;
 
     pixels[i] = finalVal;

@@ -38,9 +38,9 @@ void generateMap(int width, int height, double z, double persistance, double amp
       double perlVal = octavePerlin(dx, dy, z/height, persistance, amplitude, frequency, numberOfOctaves);  
       //double perlVal = perlin(dx * frequency, dy * frequency, z * frequency);
 
-      if(perlVal < -1 || perlVal > 1) {
-        printf("Rogue values detected! RUNNNNN\n");
-      }
+      //if(perlVal < 0 || perlVal > 1) {
+        //printf("Rogue values detected! RUNNNNN\n");
+      //}
 
 			map[y * width + x] = perlVal;
 		}
@@ -65,13 +65,12 @@ double octavePerlin(double x, double y, double z, double persistance, double sta
     amp *= persistance; //amplitude drops (persistence needs to be 0< persistence < 1)
   }
 
-  //TODO: Needs proper testing
   //Normalizing data to [0, 1]
   //Inorm = x - min(x) / (max - min)
-  
-  double norm = total + maxValue;
-  norm /= 2 * maxValue;
-  return norm;
+  return total;  
+  //double norm = total + maxValue;
+  //norm /= 2 * maxValue;
+  //return norm;
 }
 
 double perlin(double x, double y, double z) {
