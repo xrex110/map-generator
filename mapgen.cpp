@@ -58,14 +58,19 @@ int main(int argc, char** argv) {
   //detail resolution
   //Amplitude(wrt p) controls the upper bound and lower bounds of the map
   //freq controls the start frequency, start at lower values, and it keeps doubling
-  generateMap(width, height, 128, 0.625, 1, 3, 8, map1);
+  generateMap(width, height, 128, 0.6, 1, 4, 6, map1);
 
   int space = width * height;
+
 
   double max = -1;
   double min = 1;
   for(int i = 0; i < space; i++) {
     mapFinal[i] = map1[i]; 
+  }
+
+  for(int i = 0; i < space; i++) {
+    mapFinal[i] = mapFinal[i] * mapFinal[i];
     if(mapFinal[i] > max) max = mapFinal[i];
     if(mapFinal[i] < min) min = mapFinal[i];
   }
@@ -82,6 +87,7 @@ int main(int argc, char** argv) {
     if(mapFinal[i] < newmin) newmin = mapFinal[i];
   }
   
+  printf("After normalization (expected: [0,1])\n");
   printf("NewMax: %f\nNewMin: %f\n", newmax, newmin);
 
   ////////////////////////////////////////////////////////
@@ -90,14 +96,14 @@ int main(int argc, char** argv) {
   time_t cur_time = time(0);
   char* time_as_str = ctime(&cur_time);
   time_as_str[strlen(time_as_str) - 2] = 0;
-  printf("cur_time: %s\n", time_as_str);
+
   string loc("maps/Map_");
   string fileName(time_as_str);
-
   string::iterator end_pos = remove(fileName.begin(), fileName.end(), ' ');
   fileName.erase(end_pos, fileName.end());
   string filetype(".txt");
   fileName = loc + fileName + filetype;
+  
   printf("Writing data to %s\n", fileName.c_str());
   FILE* mapVals = fopen(fileName.c_str(), "w");
   if(!mapVals) {
