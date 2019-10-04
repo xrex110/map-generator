@@ -1,4 +1,4 @@
 #!/bin/bash
 
 make
-./generate
+./bin/generate

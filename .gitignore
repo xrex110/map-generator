@@ -1,9 +1,4 @@
-#Ignore all
-*
-
-#Unignore anything with an extension
-!*.*
-
+bin/
 images/
 maps/
 *.swp
