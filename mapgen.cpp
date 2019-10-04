@@ -117,22 +117,32 @@ int main(int argc, char** argv) {
 
   double maxValue = 1.00f;
 
-  int green = 0x608038;
-  int water = 0x0077be;
-  int sand = 0xc2b280;
-  int snow = 0xfffafa;
-  int rocky = 0x353644;
-  int swampy = 0x152b12;
   int deep_ocean = 0x01556b;
+  int sea_water = 0x006994;
+  int coastal_water = 0x0077be;
+  int beach_sand = 0xeed6af;
+  int inner_sand = 0xd2b55b;
+  int lowland_green = 0x608038;    //0x7cfc00;
+  int midland_green = 0x4a6904;
+  int low_rocky = 0x977c53;
+  int rocky = 0x796342;
+  int mountainous = 0x9e9e9e;
+  int snowy = 0xf0f0ec;
   
   for(int i = 0; i < width * height; i++) {
     int finalVal = 0;
 
-    if(mapFinal[i] < 0.3 * maxValue) finalVal = deep_ocean;
-    else if(mapFinal[i] < 0.52 * maxValue) finalVal = water;
-    else if(mapFinal[i] < 0.53 * maxValue) finalVal = sand;
-    else if(mapFinal[i] < 0.85 * maxValue) finalVal = green;
-    else if(mapFinal[i] < 1.0 * maxValue) finalVal = snow;
+    if(mapFinal[i] < 0.32 * maxValue) finalVal = deep_ocean;
+    else if(mapFinal[i] < 0.46 * maxValue) finalVal = sea_water;
+    else if(mapFinal[i] < 0.5 * maxValue) finalVal = coastal_water;
+    else if(mapFinal[i] < 0.51 * maxValue) finalVal = beach_sand;
+    else if(mapFinal[i] < 0.53 * maxValue) finalVal = inner_sand;
+    else if(mapFinal[i] < 0.65 * maxValue) finalVal = lowland_green;
+    else if(mapFinal[i] < 0.76 * maxValue) finalVal = midland_green;
+    else if(mapFinal[i] < 0.79 * maxValue) finalVal = low_rocky;
+    else if(mapFinal[i] < 0.82 * maxValue) finalVal = rocky;
+    else if(mapFinal[i] < 0.88 * maxValue) finalVal = mountainous;
+    else if(mapFinal[i] < 1.0 * maxValue) finalVal = snowy;
 
     pixels[i] = finalVal;
   }
