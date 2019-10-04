@@ -29,8 +29,8 @@ int main(int argc, char** argv) {
 		return 0;
 	}
 
-	int width = 780;
-	int height = 780;
+	int width = 1200;
+	int height = 720;
 
   //Default map gen param
   double amplitude = 1;

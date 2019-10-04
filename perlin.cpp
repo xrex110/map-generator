@@ -34,7 +34,7 @@ void generateMap(int width, int height, double z, double persistance, double amp
   //enumerate this
 	for(int y = 0; y < height; y++) {
 		for(int x = 0; x < width; x++) {
-			double dx = ((double) x) / (height);
+			double dx = ((double) x) / (width);
 			double dy = ((double) y) / (width);
 
       double perlVal = octavePerlin(dx, dy, z/height, persistance, amplitude, frequency, numberOfOctaves);  
