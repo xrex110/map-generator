@@ -3,6 +3,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <ctime>
+#include <algorithm>
 
 #include "perlin.hpp"
 
@@ -17,7 +18,8 @@ void initPermutations() {
     perm[i] = i + 1;
   }
 
-  shuffle(perm, LENGTH_OF(perm));  //Shuffle the contents
+  srand(time(0));
+  random_shuffle(perm, perm + LENGTH_OF(perm));  //Shuffle the contents
 
 	for(int i = 0; i < 256; i++) {
 		p[256 + i] = p[i] = perm[i];

@@ -58,19 +58,14 @@ int main(int argc, char** argv) {
   //detail resolution
   //Amplitude(wrt p) controls the upper bound and lower bounds of the map
   //freq controls the start frequency, start at lower values, and it keeps doubling
-  generateMap(width, height, 128, 0.6, 1, 4, 6, map1);
+  generateMap(width, height, 128, 0.6, 1, 3, 8, map1);
 
   int space = width * height;
-
 
   double max = -1;
   double min = 1;
   for(int i = 0; i < space; i++) {
     mapFinal[i] = map1[i]; 
-  }
-
-  for(int i = 0; i < space; i++) {
-    mapFinal[i] = mapFinal[i] * mapFinal[i];
     if(mapFinal[i] > max) max = mapFinal[i];
     if(mapFinal[i] < min) min = mapFinal[i];
   }
@@ -86,7 +81,7 @@ int main(int argc, char** argv) {
     if(mapFinal[i] > newmax) newmax = mapFinal[i];
     if(mapFinal[i] < newmin) newmin = mapFinal[i];
   }
-  
+
   printf("After normalization (expected: [0,1])\n");
   printf("NewMax: %f\nNewMin: %f\n", newmax, newmin);
 
