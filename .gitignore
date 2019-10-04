@@ -1,3 +1,9 @@
-generate
+#Ignore all
+*
+
+#Unignore anything with an extension
+!*.*
+
+images/
 maps/
 *.swp
