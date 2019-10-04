@@ -18,103 +18,24 @@
 
 void saveMapPNG(SDL_Renderer*, int, int);
 void saveMap(double[], int, int);
+void renderMap(int*, int, int);
+double* createMap(int, int, double, double, double, double, int);
+void normalizeMap(double*, int, int, double, double);
+int* populateBiomes(double* map, int, int);
 
 using namespace std;
 
-int main(int argc, char** argv) {
+void renderMap(int* pixels, int width, int height) {
 	SDL_Window* window = NULL;
 	SDL_Renderer* renderer = NULL;
 
 	if(SDL_Init(SDL_INIT_VIDEO) < 0) {
 		printf("SDL broke :(\n");
-		return 0;
+		return;
 	}
-
-	int width = 1200;
-	int height = 720;
-
-  //Default map gen param
-  double amplitude = 1;
-  int octaves = 2;
-  double persistence = 0.5; 
-  double zVal = 4;
-
-  double inputFreq = 4;
 
 	SDL_CreateWindowAndRenderer(width, height, 0, &window, &renderer);
 	SDL_Texture* texture = SDL_CreateTexture(renderer, SDL_PIXELFORMAT_ARGB8888, SDL_TEXTUREACCESS_STATIC, width, height);
-
-  int* pixels = new int[width * height];  //1d mapping of 2d plane
-  memset(pixels, 255, sizeof(int) * width * height);
-
-  double* map1 = new double[width * height];  //1d mapping of 2d plane
-  double* mapFinal = new double[width * height];  //1d mapping of 2d plane
-  memset(map1, 0, sizeof(double) * width * height);
-  memset(mapFinal, 0, sizeof(double) * width * height);
-
-  //persistance, amp, freq, numOctaves
-  //Lower persistance results in more blobby, less detail maps
-  //something that looks like singular continents
-  //Higher persistance results in MASSIVE world views, with high
-  //detail resolution 
-  //Amplitude(wrt p) controls the upper bound and lower bounds of the map 
-  //freq controls the start frequency, start at lower values, and it keeps doubling 
-
-  generateMap(width, height, 128, 0.6, 1, 3, 8, map1);
-
-  int space = width * height; 
-  double max = -1;
-  double min = 1;
-  for(int i = 0; i < space; i++) {
-    mapFinal[i] = map1[i]; 
-    if(mapFinal[i] > max) max = mapFinal[i];
-    if(mapFinal[i] < min) min = mapFinal[i];
-  }
-
-  //Worth a try
-  //Normalize all points
-  double newmax = -1;
-  double newmin = 1;
-  for(int i = 0; i < space; i++) {
-    mapFinal[i] = (mapFinal[i] - min) / (max - min);
-    if(mapFinal[i] > newmax) newmax = mapFinal[i];
-    if(mapFinal[i] < newmin) newmin = mapFinal[i];
-  }
-  printf("Data normalized\n");
-
-  saveMap(mapFinal, width, height);
-
-  double maxValue = 1.00f;
-
-  int deep_ocean = 0x01556b;
-  int sea_water = 0x006994;
-  int coastal_water = 0x0077be;
-  int beach_sand = 0xeed6af;
-  int inner_sand = 0xd2b55b;
-  int lowland_green = 0x608038;
-  int midland_green = 0x4a6904;
-  int low_rocky = 0x977c53;
-  int rocky = 0x796342;
-  int mountainous = 0x9e9e9e;
-  int snowy = 0xf0f0ec;
-  
-  for(int i = 0; i < space; i++) {
-    int finalVal = 0;
-
-    if(mapFinal[i] < 0.32 * maxValue) finalVal = deep_ocean;
-    else if(mapFinal[i] < 0.46 * maxValue) finalVal = sea_water;
-    else if(mapFinal[i] < 0.5 * maxValue) finalVal = coastal_water;
-    else if(mapFinal[i] < 0.51 * maxValue) finalVal = beach_sand;
-    else if(mapFinal[i] < 0.53 * maxValue) finalVal = inner_sand;
-    else if(mapFinal[i] < 0.65 * maxValue) finalVal = lowland_green;
-    else if(mapFinal[i] < 0.76 * maxValue) finalVal = midland_green;
-    else if(mapFinal[i] < 0.79 * maxValue) finalVal = low_rocky;
-    else if(mapFinal[i] < 0.82 * maxValue) finalVal = rocky;
-    else if(mapFinal[i] < 0.88 * maxValue) finalVal = mountainous;
-    else if(mapFinal[i] < 1.0 * maxValue) finalVal = snowy;
-
-    pixels[i] = finalVal;
-  }
 
   SDL_UpdateTexture(texture, NULL, pixels, width * sizeof(int));
 	SDL_RenderClear(renderer);
@@ -135,13 +56,106 @@ int main(int argc, char** argv) {
     }
   }
 
-  delete[] pixels;
   SDL_DestroyTexture(texture);
   SDL_DestroyRenderer(renderer);
   SDL_DestroyWindow(window);
   printf("Program ended\n");
   SDL_Quit();
+}
 
+double* createMap(int width,
+                   int height,
+                   double zVal,
+                   double p,
+                   double amp,
+                   double freq,
+                   int numOctaves) {
+  double* map = new double[width * height];  //1d mapping of 2d plane
+  memset(map, 0, sizeof(double) * width * height);
+
+  //persistance, amp, freq, numOctaves
+  //Lower persistance results in more blobby, less detail maps
+  //something that looks like singular continents
+  //Higher persistance results in MASSIVE world views, with high
+  //detail resolution 
+  //Amplitude(wrt p) controls the upper bound and lower bounds of the map 
+  //freq controls the start frequency, start at lower values, and it keeps doubling 
+  generateMap(width, height, 128, 0.6, 1, 3, 8, map);
+
+  int space = width * height; 
+  double max = -1;
+  double min = 1;
+  for(int i = 0; i < space; i++) {
+    if(map[i] > max) max = map[i];
+    if(map[i] < min) min = map[i];
+  }
+
+  normalizeMap(map, width, height, min, max);
+  return map;
+}
+
+void normalizeMap(double* map, int width, int height, double min, double max) {
+  long space = width * height; 
+  for(int i = 0; i < space; i++) {
+    map[i] = (map[i] - min) / (max - min);
+  }
+  printf("Data normalized\n");
+}
+
+int* populateBiomes(double* map, int width, int height) {
+  long space = width * height;
+
+  int* pixels = new int[space];  //1d mapping of 2d plane
+  memset(pixels, 255, sizeof(int) * width * height);
+
+  int deep_ocean = 0x01556b;
+  int sea_water = 0x006994;
+  int coastal_water = 0x0077be;
+  int beach_sand = 0xeed6af;
+  int inner_sand = 0xd2b55b;
+  int lowland_green = 0x608038;
+  int midland_green = 0x4a6904;
+  int low_rocky = 0x977c53;
+  int rocky = 0x796342;
+  int mountainous = 0x9e9e9e;
+  int snowy = 0xf0f0ec;
+
+  double maxValue = 1.0f;
+  
+  for(int i = 0; i < space; i++) {
+    int finalVal = 0;
+
+    if(map[i] < 0.32 * maxValue) finalVal = deep_ocean;
+    else if(map[i] < 0.46 * maxValue) finalVal = sea_water;
+    else if(map[i] < 0.5 * maxValue) finalVal = coastal_water;
+    else if(map[i] < 0.51 * maxValue) finalVal = beach_sand;
+    else if(map[i] < 0.53 * maxValue) finalVal = inner_sand;
+    else if(map[i] < 0.65 * maxValue) finalVal = lowland_green;
+    else if(map[i] < 0.76 * maxValue) finalVal = midland_green;
+    else if(map[i] < 0.79 * maxValue) finalVal = low_rocky;
+    else if(map[i] < 0.82 * maxValue) finalVal = rocky;
+    else if(map[i] < 0.88 * maxValue) finalVal = mountainous;
+    else if(map[i] < 1.0 * maxValue) finalVal = snowy;
+
+    pixels[i] = finalVal;
+  }
+  return pixels;
+}
+
+int main(int argc, char** argv) {
+	int width = 1200;
+	int height = 720;
+
+  double* map = createMap(width, height, 128, 0.6, 1, 3, 8);
+
+  saveMap(map, width, height);
+
+  int* finalMap = populateBiomes(map, width, height);
+
+  renderMap(finalMap, width, height);
+
+  delete[] map;
+  delete[] finalMap;
   return 0;
 }
 
