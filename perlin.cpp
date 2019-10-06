@@ -27,54 +27,46 @@ void initPermutations() {
 }
 
 //The generated map is stored in pixels.
-void generateMap(int width, int height, double z, double persistance, double amplitude, double frequency, int numberOfOctaves, double* map) {
-	memset(map, 255, width * height * sizeof(double));
+void generateMap(gen_attr attr, double* map) {
+	memset(map, 255, attr.width * attr.height * sizeof(double));
   initPermutations();
 
   //enumerate this
-	for(int y = 0; y < height; y++) {
-		for(int x = 0; x < width; x++) {
-			double dx = ((double) x) / (width);
-			double dy = ((double) y) / (width);
+	for(int y = 0; y < attr.height; y++) {
+		for(int x = 0; x < attr.width; x++) {
+			double dx = ((double) x) / attr.scale;
+			double dy = ((double) y) / attr.scale;
+      double dz = 128.0 / attr.scale;
 
-      double perlVal = octavePerlin(dx, dy, z/height, persistance, amplitude, frequency, numberOfOctaves);  
-      //double perlVal = perlin(dx * frequency, dy * frequency, z * frequency);
-
-      //if(perlVal < 0 || perlVal > 1) {
-        //printf("Rogue values detected! RUNNNNN\n");
-      //}
-
-			map[y * width + x] = perlVal;
+			map[y * attr.width + x] = octavePerlin(dx, dy, dz, attr);  
 		}
 	}
 }
 
-double octavePerlin(double x, double y, double z, double persistance, double startAmp, double startFreq, int numOctaves) {
-  if(persistance <= 0 || persistance > 1) {
+double octavePerlin(double x, double y, double z, gen_attr attr) {
+  if(attr.persistance <= 0 || attr.persistance > 1) {
     printf("Persistance needs to be 0 < p < 1");
     return 0;
   }
 
-  double amp = startAmp;
-  double freq = startFreq;
+  double amp = 1;   //tied to 1, gets scaled down during normalization anyways...
+  double freq = attr.frequency;
   double total = 0;
   double maxValue = 0;
 
-  for(int i = 0; i < numOctaves; i++) {
+  for(int i = 0; i < attr.octaves; i++) {
     total += amp * perlin(x * freq, y * freq, z * freq);
-    freq *= 2; //frequency doubles every octave
+    freq *= attr.lacunarity; //frequency increases by lacunarity
     maxValue += amp;
-    amp *= persistance; //amplitude drops (persistence needs to be 0< persistence < 1)
+    amp *= attr.persistance; //amplitude drops (persistence needs to be 0< persistence < 1)
   }
 
-  //Normalizing data to [0, 1]
-  //Inorm = x - min(x) / (max - min)
   return total;  
-  //double norm = total + maxValue;
-  //norm /= 2 * maxValue;
-  //return norm;
 }
 
+//Credit for this func goes to Ken Perlin's original
+//example implementation of improved perlin noise
+//See:  mrl.nyu.edu/~perlin/noise/
 double perlin(double x, double y, double z) {
      int X = (int)x & 255,
           Y = (int)y & 255,
@@ -96,17 +88,11 @@ double perlin(double x, double y, double z) {
                                      grad(p[BA+1], x-1, y  , z-1 )), 
                              lerp(u, grad(p[AB+1], x  , y-1, z-1 ),
                                      grad(p[BB+1], x-1, y-1, z-1 ))));
-	//return (result + 1) / 2;	//Translate the [-1, 1] range to [0, 1] range
   return result;
 
 }
 
 double grad(int hash, double x, double y, double z) {
-  //int h = hash & 15;
-  //double u = h<8 ? x : y,
-         //v = h<4 ? y : h==12||h==14 ? x : z;
-  //return ((h&1) == 0 ? u : -u) + ((h&2) == 0 ? v : -v);
-	
   //Riven's improved gradient/distance dotprod function, runs 2x faster on most systems
   switch(hash & 0xF){
     case 0x0: return  x + y;

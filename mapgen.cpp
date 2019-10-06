@@ -6,6 +6,7 @@
 #include <string>
 #include <algorithm>
 
+#include "mapgen.hpp"
 #include "perlin.hpp"
 
     //grayscale needs [0, 1]
@@ -16,12 +17,6 @@
     //int r = b * 0x10000;
     //finalVal = r + g + b;
 
-void saveMapPNG(SDL_Renderer*, int, int);
-void saveMap(double[], int, int);
-void renderMap(int*, int, int);
-double* createMap(int, int, double, double, double, double, int);
-void normalizeMap(double*, int, int, double, double);
-int* populateBiomes(double* map, int, int);
 
 using namespace std;
 
@@ -63,15 +58,10 @@ void renderMap(int* pixels, int width, int height) {
   SDL_Quit();
 }
 
-double* createMap(int width,
-                   int height,
-                   double zVal,
-                   double p,
-                   double amp,
-                   double freq,
-                   int numOctaves) {
-  double* map = new double[width * height];  //1d mapping of 2d plane
-  memset(map, 0, sizeof(double) * width * height);
+double* createMap(gen_attr attr) {
+  int space = attr.width * attr.height; 
+  double* map = new double[space];  //1d mapping of 2d plane
+  memset(map, 0, sizeof(double) * space);
 
   //persistance, amp, freq, numOctaves
   //Lower persistance results in more blobby, less detail maps
@@ -80,9 +70,9 @@ double* createMap(int width,
   //detail resolution 
   //Amplitude(wrt p) controls the upper bound and lower bounds of the map 
   //freq controls the start frequency, start at lower values, and it keeps doubling 
-  generateMap(width, height, 128, 0.6, 1, 3, 8, map);
+  
+  generateMap(attr, map);
 
-  int space = width * height; 
   double max = -1;
   double min = 1;
   for(int i = 0; i < space; i++) {
@@ -90,7 +80,7 @@ double* createMap(int width,
     if(map[i] < min) min = map[i];
   }
 
-  normalizeMap(map, width, height, min, max);
+  normalizeMap(map, attr.width, attr.height, min, max);
   return map;
 }
 
@@ -146,7 +136,16 @@ int main(int argc, char** argv) {
 	int width = 1200;
 	int height = 720;
 
-  double* map = createMap(width, height, 128, 0.6, 1, 3, 8);
+  gen_attr attr = {
+    .persistance = 0.6,
+    .lacunarity = 2,
+    .frequency = 3,
+    .octaves = 8,
+    .width = width,
+    .height = height,
+    .scale = width };
+
+  double* map = createMap(attr);
 
   saveMap(map, width, height);
 
