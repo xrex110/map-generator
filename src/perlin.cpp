@@ -5,7 +5,7 @@
 #include <ctime>
 #include <algorithm>
 
-#include "perlin.hpp"
+#include "../include/perlin.hpp"
 
 #define LENGTH_OF(X)   ((sizeof(X)/sizeof(0[X])) / ((size_t) (!(sizeof(X) % sizeof(0[X])))))
 

@@ -6,8 +6,8 @@
 #include <string>
 #include <algorithm>
 
-#include "mapgen.hpp"
-#include "perlin.hpp"
+#include "../include/mapgen.hpp"
+#include "../include/perlin.hpp"
 
     //grayscale needs [0, 1]
     //perlVal = (perlVal + 1) / 2;
