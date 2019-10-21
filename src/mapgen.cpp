@@ -8,6 +8,7 @@
 
 #include "../include/mapgen.hpp"
 #include "../include/perlin.hpp"
+#include "../include/hex.hpp"
 
     //grayscale needs [0, 1]
     //perlVal = (perlVal + 1) / 2;
@@ -16,8 +17,6 @@
     //int g = b * 0x100;
     //int r = b * 0x10000;
     //finalVal = r + g + b;
-
-#define PI_VAL 3.1415926535897
 
 using namespace std;
 
@@ -39,20 +38,9 @@ void renderMap(int* pixels, int width, int height) {
   SDL_RenderClear(renderer);
   SDL_RenderCopy(renderer, texture, NULL, NULL);
 
-  //Draw test hex
-  point_t center = {.x = 600, .y = 360};
-  point_t p0 = hex_corner(center, 100, 0);
-  point_t p1 = hex_corner(center, 100, 1);
-  point_t p2 = hex_corner(center, 100, 2);
-  point_t p3 = hex_corner(center, 100, 3);
-  point_t p4 = hex_corner(center, 100, 4);
-  point_t p5 = hex_corner(center, 100, 5);
-  SDL_RenderDrawLine(renderer, p0.x, p0.y, p1.x, p1.y);
-  SDL_RenderDrawLine(renderer, p1.x, p1.y, p2.x, p2.y);
-  SDL_RenderDrawLine(renderer, p2.x, p2.y, p3.x, p3.y);
-  SDL_RenderDrawLine(renderer, p3.x, p3.y, p4.x, p4.y);
-  SDL_RenderDrawLine(renderer, p4.x, p4.y, p5.x, p5.y);
-  SDL_RenderDrawLine(renderer, p5.x, p5.y, p0.x, p0.y);
+  SDL_SetRenderDrawColor(renderer, 255, 0, 0, SDL_ALPHA_OPAQUE);
+  point_t test_c = {.x = 600, .y = 360}; 
+  draw_hexagon(renderer, test_c, 50); 
 
   SDL_RenderPresent(renderer);
 
@@ -238,12 +226,3 @@ void saveMap(double points[], int width, int height) {
   fclose(mapVals);
   mapVals = NULL;
 }
-
-point_t hex_corner(point_t center, int size, int i) {
-  int angle_degrees = 60 * i;
-  double angle_radians = (PI_VAL/180) * angle_degrees;
-  point_t corner_coord = {.x = center.x + (size * cos(angle_radians)), .y = center.y + (size * sin(angle_radians))};
-  return corner_coord;
-}
-
-
