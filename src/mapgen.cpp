@@ -21,6 +21,8 @@
 
 using namespace std;
 
+bool saveFlag = false;
+
 void renderMap(int* pixels, int width, int height) {
 	SDL_Window* window = NULL;
 	SDL_Renderer* renderer = NULL;
@@ -55,7 +57,7 @@ void renderMap(int* pixels, int width, int height) {
   SDL_RenderPresent(renderer);
 
   //save png
-  saveMapPNG(renderer, width, height);
+  if(saveFlag) saveMapPNG(renderer, width, height);
   
   bool quit = false;
 
@@ -150,6 +152,19 @@ int* populateBiomes(double* map, int width, int height) {
 }
 
 int main(int argc, char** argv) {
+  //Check for save flag
+  //Make into button/hotkey later?
+  if (argc == 2) {
+    if(!strcmp(argv[1], "save")) {
+      saveFlag = true;
+    }
+    else {
+      printf("Invalid argument, please retry\n");
+      exit(1);
+    }
+  }
+  
+
 	int width = 1200;
 	int height = 720;
 
@@ -164,7 +179,7 @@ int main(int argc, char** argv) {
 
   double* map = createMap(attr);
 
-  saveMap(map, width, height);
+  if(saveFlag) saveMap(map, width, height);
 
   int* finalMap = populateBiomes(map, width, height);
 
