@@ -39,8 +39,29 @@ void renderMap(int* pixels, int width, int height) {
   SDL_RenderCopy(renderer, texture, NULL, NULL);
 
   SDL_SetRenderDrawColor(renderer, 255, 0, 0, SDL_ALPHA_OPAQUE);
-  point_t test_c = {.x = 600, .y = 360}; 
-  draw_hexagon(renderer, test_c, 50); 
+
+  point_t temp_c = {0, 0};
+  hexagon_t temp = get_hexagon(temp_c, 25);
+  double widthHex = temp.width;
+  double heightHex = temp.height;
+
+  int numWidth = ceil(width/(widthHex)) + 1;
+  int numHeight = ceil(height/(0.75 * heightHex)) + 1;
+
+  printf("Width, height of hex: %f, %f\nnumWidth, numHeight: %d, %d\n", widthHex, heightHex, numWidth, numHeight);
+
+  point_t test_c;
+  for(int row = 0; row < numHeight; row++) {
+    for(int col = 0; col < numWidth; col++) {
+      if(row % 2 == 0) { //if even row, offset by width
+        test_c = {.x = /*widthHex +*/ col * widthHex, .y = /*heightHex/2*/ + row * heightHex * 0.75};  
+      }
+      else  {
+        test_c = {.x = (widthHex/2) + col * widthHex, .y = /*heightHex/2*/ + (row * heightHex * 0.75)};
+      }
+      draw_hexagon(renderer, test_c, temp.size); 
+    }
+  }
 
   SDL_RenderPresent(renderer);
 
@@ -153,8 +174,8 @@ int main(int argc, char** argv) {
   }
   
 
-	int width = 1200;
-	int height = 720;
+	int width = 620;
+	int height = 620;
 
   gen_attr attr = {
     .persistance = 0.6,
