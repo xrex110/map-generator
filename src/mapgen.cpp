@@ -40,29 +40,10 @@ void renderMap(int* pixels, int width, int height) {
 
   SDL_SetRenderDrawColor(renderer, 255, 0, 0, SDL_ALPHA_OPAQUE);
 
-  point_t temp_c = {0, 0};
-  hexagon_t temp = get_hexagon(temp_c, 25);
-  double widthHex = temp.width;
-  double heightHex = temp.height;
-
-  int numWidth = ceil(width/(widthHex)) + 1;
-  int numHeight = ceil(height/(0.75 * heightHex)) + 1;
-
-  printf("Width, height of hex: %f, %f\nnumWidth, numHeight: %d, %d\n", widthHex, heightHex, numWidth, numHeight);
-
-  point_t test_c;
-  for(int row = 0; row < numHeight; row++) {
-    for(int col = 0; col < numWidth; col++) {
-      if(row % 2 == 0) { //if even row, offset by width
-        test_c = {.x = /*widthHex +*/ col * widthHex, .y = /*heightHex/2*/ + row * heightHex * 0.75};  
-      }
-      else  {
-        test_c = {.x = (widthHex/2) + col * widthHex, .y = /*heightHex/2*/ + (row * heightHex * 0.75)};
-      }
-      draw_hexagon(renderer, test_c, temp.size); 
-    }
-  }
-
+  int sizeGrid;
+  hexagon_t* grid = createHexGrid(width, height, 25, &sizeGrid);
+  drawHexGrid(renderer, grid, sizeGrid);
+  delete[] grid;
   SDL_RenderPresent(renderer);
 
   //save png
@@ -173,7 +154,6 @@ int main(int argc, char** argv) {
     }
   }
   
-
 	int width = 620;
 	int height = 620;
 
@@ -246,4 +226,42 @@ void saveMap(double points[], int width, int height) {
   fprintf(mapVals, "%.2f", points[space - 1]);
   fclose(mapVals);
   mapVals = NULL;
+}
+
+hexagon_t* createHexGrid(int mapWidth, int mapHeight, int size, int* arrSize) {
+  point_t temp_c = {0, 0};
+  hexagon_t temp = get_hexagon(temp_c, size);
+  double widthHex = temp.width;
+  double heightHex = temp.height;
+
+  int numWidth = ceil(mapWidth/(widthHex)) + 1;
+  int numHeight = ceil(mapHeight/(0.75 * heightHex)) + 1;
+
+  hexagon_t* arr = new hexagon_t[numWidth * numHeight];
+
+  point_t test_c;
+  int i = 0;
+  for(int row = 0; row < numHeight; row++) {
+    for(int col = 0; col < numWidth; col++) {
+      if(row % 2 == 0) { //if even row, offset by width
+        test_c = {.x = col * widthHex, .y = row * heightHex * 0.75};  
+      }
+      else  {
+        test_c = {.x = (widthHex/2) + col * widthHex, .y = (row * heightHex * 0.75)};
+      }
+      hexagon_t cur_hex = get_hexagon(test_c, temp.size); 
+      arr[i++] = cur_hex; 
+    }
+  }
+
+  if(i != numWidth * numHeight) printf("Fatal error, segfault prolly\n");
+  *arrSize = i;
+  return arr;
+}
+
+void drawHexGrid(SDL_Renderer* render, hexagon_t* grid, int size) {
+  //draw the hexes
+  for(int i = 0; i < size; i++) {
+    draw_hexagon(render, grid[i]);
+  }
 }
