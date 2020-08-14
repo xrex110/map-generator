@@ -5,6 +5,7 @@
 #include <ctime>
 #include <string>
 #include <algorithm>
+#include <cmath>
 
 #include "../include/mapgen.hpp"
 #include "../include/perlin.hpp"

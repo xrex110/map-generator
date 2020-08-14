@@ -133,6 +133,5 @@ void shuffle(int* arr, int length) {
     arr[a] = arr[b];
     arr[b] = t;
   }
-
 }
 
